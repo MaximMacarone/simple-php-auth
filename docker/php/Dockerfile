@@ -5,7 +5,8 @@ FROM php:8.1-fpm
 RUN apt-get update && apt-get install -y \
     libzip-dev \
     unzip \
-    && docker-php-ext-install zip pdo pdo_mysql
+    && docker-php-ext-install zip pdo pdo_mysql \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Устанавливаем Composer
 COPY --from=composer:2.6 /usr/bin/composer /usr/bin/composer
@@ -18,12 +19,10 @@ COPY ./web /var/www/html
 
 # Настраиваем права доступа
 RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html
+    && chmod -R 775 /var/www/html
 
-# Открываем порт
+# Открываем порт (не обязателен при использовании NGINX)
 EXPOSE 9000
 
 # Стартуем PHP-FPM
 CMD ["php-fpm"]
-
-RUN docker-php-ext-install pdo pdo_mysql
