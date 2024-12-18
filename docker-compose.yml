@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  php:
+    build:
+      context: .
+      dockerfile: ./docker/php/Dockerfile
+    container_name: php-container
+    volumes:
+      - ./web:/var/www/html
+    ports:
+      - "9001:9000"
+    networks:
+      - app-network
+
+  nginx:
+    image: nginx:1.25
+    container_name: nginx-container
+    volumes:
+      - ./web:/var/www/html
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf
+    ports:
+      - "8080:80"
+    depends_on:
+      - php
+    networks:
+      - app-network
+
+
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: phpDB
+      MYSQL_USER: maxim
+      MYSQL_PASSWORD: maxim
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - app-network
+
+networks:
+  app-network:
+
+volumes:
+  db_data:
