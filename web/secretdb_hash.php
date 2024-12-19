@@ -22,16 +22,12 @@ try {
 
 // Регистрация
 if (isset($_POST['register'])) {
-    // Получаем данные из формы регистрации
-    $name = $_POST['name'];
-    $password = $_POST['password'];
+    $name = $_POST['reg_name'];
+    $password = $_POST['reg_password'];
 
-    // Проверяем, что имя пользователя не пустое и что пароль имеет достаточную длину
     if (!empty($name) && strlen($password) >= 6) {
-        // Хешируем пароль
         $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
-        // Вставляем нового пользователя в базу данных
         $stmt = $pdo->prepare('INSERT INTO hashed_users (username, password) VALUES (:username, :password)');
         $stmt->bindParam(':username', $name, PDO::PARAM_STR);
         $stmt->bindParam(':password', $hashedPassword, PDO::PARAM_STR);
@@ -46,20 +42,18 @@ if (isset($_POST['register'])) {
 }
 
 // Логин
-if (!isset($_POST['name']) || !isset($_POST['password'])) {
-    // Форма логина
+if (!isset($_POST['login_name']) || !isset($_POST['login_password'])) {
     echo '<h1>Please Log In</h1>';
-    echo 'This page is secret.';
     ?>
     <form method="post" action="secretdb_hash.php">
         <table border="1">
             <tr>
                 <th>Username</th>
-                <td><input type="text" name="name"></td>
+                <td><input type="text" name="login_name"></td>
             </tr>
             <tr>
                 <th>Password</th>
-                <td><input type="password" name="password"></td>
+                <td><input type="password" name="login_password"></td>
             </tr>
             <tr>
                 <td colspan="2" align="center">
@@ -69,18 +63,17 @@ if (!isset($_POST['name']) || !isset($_POST['password'])) {
         </table>
     </form>
     <?php
-    // Форма регистрации
     echo '<h1>New User? Register here:</h1>';
     ?>
     <form method="post" action="secretdb_hash.php">
         <table border="1">
             <tr>
                 <th>Username</th>
-                <td><input type="text" name="name" required></td>
+                <td><input type="text" name="reg_name" required></td>
             </tr>
             <tr>
                 <th>Password</th>
-                <td><input type="password" name="password" required></td>
+                <td><input type="password" name="reg_password" required></td>
             </tr>
             <tr>
                 <td colspan="2" align="center">
@@ -91,22 +84,18 @@ if (!isset($_POST['name']) || !isset($_POST['password'])) {
     </form>
     <?php
 } else {
-    // Логин
-    $name = $_POST['name'];
-    $password = $_POST['password'];
+    $name = $_POST['login_name'];
+    $password = $_POST['login_password'];
 
-    // Получаем данные пользователя из базы данных
     $stmt = $pdo->prepare('SELECT * FROM hashed_users WHERE username = :username');
     $stmt->bindParam(':username', $name, PDO::PARAM_STR);
     $stmt->execute();
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if ($user && password_verify($password, $user['password'])) {
-        // Если пароль верный
         echo '<h1>Here it is!</h1>';
         echo 'I bet you are glad you can see this secret page.';
     } else {
-        // Если имя пользователя или пароль неверные
         echo '<h1>Go Away!</h1>';
         echo 'You are not authorized to view this resource.';
     }
